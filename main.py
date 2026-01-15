@@ -100,6 +100,7 @@ def main() -> None:
             time_steps=cfg.TIME_STEPS,
             dt=cfg.DT,
             G=cfg.G,
+            softening_factor=cfg.SOFTENING_FACTOR,
             integrator_id=integrator_id,
             initial_conditions=initial_conditions,
         )

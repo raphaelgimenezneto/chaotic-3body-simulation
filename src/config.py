@@ -8,6 +8,7 @@ TIME_STEPS = 600
 DT = 0.01
 SPACE_SIZE = 1.0
 G = 1.0
+SOFTENING_FACTOR = 1e-6  # Avoids singularity when distance is zero
 
 # Integration method (used by physics engine)
 # Options: "euler", "rk4", "verlet"
@@ -67,4 +68,5 @@ assert 0 < BATCH_SIZE <= NUM_SIMULATIONS, "BATCH_SIZE must be in (0, NUM_SIMULAT
 assert GRID_SIZE > 0, "GRID_SIZE must be > 0"
 assert TIME_STEPS > 0, "TIME_STEPS must be > 0"
 assert DT > 0, "DT must be > 0"
+assert SOFTENING_FACTOR >= 0, "SOFTENING_FACTOR must be a non-negative number"
 assert len(MASSES) == 3 and all(m > 0 for m in MASSES), "MASSES must be a list of 3 positive numbers"

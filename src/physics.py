@@ -25,7 +25,7 @@ def get_cell_index(x: float, y: float, grid_size: int, space_size: float):
 
 
 @njit(inline="always", fastmath=True)
-def compute_forces(pos_x, pos_y, masses, ejected, G, fx, fy):
+def compute_forces(pos_x, pos_y, masses, ejected, G, fx, fy, softening_factor):
     """
     Compute pairwise gravitational forces for the 3-body system.
 
@@ -49,7 +49,7 @@ def compute_forces(pos_x, pos_y, masses, ejected, G, fx, fy):
             dist_sq = dx * dx + dy * dy
 
             # Small epsilon avoids division by zero / singularity
-            dist = np.sqrt(dist_sq) + 1e-6
+            dist = np.sqrt(dist_sq) + softening_factor
             
             # F = G * m1 * m2 / r^2  =>  F/r = G * m1 * m2 / r^3
             factor = G * masses[a] * masses[b] / (dist * dist * dist)
@@ -59,11 +59,11 @@ def compute_forces(pos_x, pos_y, masses, ejected, G, fx, fy):
 
 
 @njit(inline="always", fastmath=True)
-def euler_step(pos_x, pos_y, vel_x, vel_y, masses, ejected, dt, space_size, G, fx, fy):
+def euler_step(pos_x, pos_y, vel_x, vel_y, masses, ejected, dt, space_size, G, fx, fy, softening_factor):
     """
     Perform one Euler integration step (dt) and update ejection status.
     """
-    compute_forces(pos_x, pos_y, masses, ejected, G, fx, fy)
+    compute_forces(pos_x, pos_y, masses, ejected, G, fx, fy, softening_factor)
 
     newly_ejected = 0
     for a in range(3):
@@ -87,7 +87,7 @@ def euler_step(pos_x, pos_y, vel_x, vel_y, masses, ejected, dt, space_size, G, f
 
 
 @njit(parallel=True, fastmath=True)
-def run_simulation_batch_euler(probe_initial_positions, grid_size, space_size, time_steps, dt, G, masses, initial_body_positions, initial_velocities):
+def run_simulation_batch_euler(probe_initial_positions, grid_size, space_size, time_steps, dt, G, masses, initial_body_positions, initial_velocities, softening_factor):
     N = probe_initial_positions.shape[0]
     results = np.zeros(N, dtype=np.float64)
 
@@ -125,7 +125,7 @@ def run_simulation_batch_euler(probe_initial_positions, grid_size, space_size, t
         num_ejected = 0
 
         for _ in range(time_steps):
-            newly_ejected = euler_step(pos_x, pos_y, vel_x, vel_y, masses, ejected, dt, space_size, G, fx, fy)
+            newly_ejected = euler_step(pos_x, pos_y, vel_x, vel_y, masses, ejected, dt, space_size, G, fx, fy, softening_factor)
             num_ejected += newly_ejected
 
             if num_ejected == 3:
@@ -141,7 +141,7 @@ def run_simulation_batch_euler(probe_initial_positions, grid_size, space_size, t
     return results
 
 
-def run_simulation_batch(probe_initial_positions, grid_size, space_size, time_steps, dt, G, integrator_id, initial_conditions):
+def run_simulation_batch(probe_initial_positions, grid_size, space_size, time_steps, dt, G, softening_factor, integrator_id, initial_conditions):
     """
     Public API: dispatch to the chosen integrator.
     Unpacks initial_conditions dict for Numba compatibility.
@@ -161,7 +161,8 @@ def run_simulation_batch(probe_initial_positions, grid_size, space_size, time_st
             G,
             masses,
             initial_body_positions,
-            initial_velocities
+            initial_velocities,
+            softening_factor
         )
     elif integrator_id == 1:
         raise ValueError("RK4 integrator not implemented yet (integrator_id=1)")

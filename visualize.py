@@ -94,15 +94,14 @@ def main() -> None:
             "grid_size": cfg.GRID_SIZE,
             "space_size": cfg.SPACE_SIZE,
             "G": cfg.G,
+            "softening_factor": getattr(cfg, "SOFTENING_FACTOR", "not_set"),
             "use_zoom": cfg.USE_ZOOM,
-            # --- MODIFIED SECTION ---
             "masses": cfg.MASSES,
             "body1_pos_frac": cfg.BODY1_POS_FRAC,
             "body2_pos_frac": cfg.BODY2_POS_FRAC,
             "body1_vel": cfg.BODY1_VEL,
             "body2_vel": cfg.BODY2_VEL,
             "probe_vel": cfg.PROBE_VEL,
-            # ------------------------
         },
         "git": {
             "commit": commit,
