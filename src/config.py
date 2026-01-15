@@ -11,8 +11,18 @@ G = 1.0
 SOFTENING_FACTOR = 1e-6  # Avoids singularity when distance is zero
 
 # Integration method (used by physics engine)
-# Options: "euler", "rk4", "verlet"
-INTEGRATOR = "euler"
+# --------------------------------------------
+# "euler":  Simplest and fastest. Numerically unstable, does not conserve
+#           energy. Great for rapid prototyping.
+#
+# "verlet": (Velocity Verlet) The standard for N-body problems. Excellent
+#           long-term energy conservation (symplectic). Similar computational
+#           cost to Euler. The best overall choice.
+#
+# "rk4":    (Runge-Kutta 4th-order) Very accurate per time step, but
+#           requires 4 force calculations per step, making it slower.
+#
+INTEGRATOR = "rk4" 
 
 # ----------------------------
 # System Initial Conditions
@@ -33,7 +43,7 @@ PROBE_VEL = (0.0, 0.05) # This was previously hardcoded in physics.py
 # ----------------------------
 # Dataset generation parameters
 # ----------------------------
-NUM_SIMULATIONS = 5000000
+NUM_SIMULATIONS = 500000
 BATCH_SIZE = 50000
 OUTPUT_DIR = os.path.join("data", "raw")
 METRIC_COLUMN_NAME = "total_sum" # Canonical name for the output metric column
