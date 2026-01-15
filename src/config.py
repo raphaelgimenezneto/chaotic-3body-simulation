@@ -41,6 +41,12 @@ OUTPUT_DIR = os.path.join("data", "raw")
 SEED = None
 
 # ----------------------------
+# Visualization parameters
+# ----------------------------
+# Resolution for analysis grid (can be lower than simulation's GRID_SIZE for performance)
+VISUAL_GRID_SIZE = 150
+
+# ----------------------------
 # Sampling domain for the Probe (Body 3)
 # ----------------------------
 USE_ZOOM = False
@@ -66,6 +72,7 @@ assert 0 <= Y_MIN < Y_MAX <= SPACE_SIZE, "Invalid Y domain bounds"
 assert NUM_SIMULATIONS > 0, "NUM_SIMULATIONS must be > 0"
 assert 0 < BATCH_SIZE <= NUM_SIMULATIONS, "BATCH_SIZE must be in (0, NUM_SIMULATIONS]"
 assert GRID_SIZE > 0, "GRID_SIZE must be > 0"
+assert VISUAL_GRID_SIZE > 0, "VISUAL_GRID_SIZE must be > 0"
 assert TIME_STEPS > 0, "TIME_STEPS must be > 0"
 assert DT > 0, "DT must be > 0"
 assert SOFTENING_FACTOR >= 0, "SOFTENING_FACTOR must be a non-negative number"

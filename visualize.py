@@ -16,9 +16,7 @@ from src.run_metadata import (
     write_text,
 )
 
-# Visualization-specific resolution (can be lower than simulation grid for faster rendering)
-VISUAL_GRID_SIZE = 150
-
+# VISUAL_GRID_SIZE moved to src/config.py to centralize all parameters.
 
 def main() -> None:
     print("--- STARTING VISUALIZATION ---")
@@ -48,7 +46,7 @@ def main() -> None:
     extent = [cfg.X_MIN, cfg.X_MAX, cfg.Y_MIN, cfg.Y_MAX]
 
     # 3) Compute statistics
-    mean, var, mask = compute_grid_statistics(df, VISUAL_GRID_SIZE, x_range, y_range)
+    mean, var, mask = compute_grid_statistics(df, cfg.VISUAL_GRID_SIZE, x_range, y_range)
 
     # 4) Classify regions
     class_map = classify_regions(mean, var, mask)
@@ -76,33 +74,13 @@ def main() -> None:
     write_json(os.path.join(run_dir, "config_snapshot.json"), cfg_snapshot)
 
     # Extra run info (handy for quick auditing)
+    # This file contains metadata about the visualization run itself,
+    # while config_snapshot.json contains the parameters used for the simulation.
     run_info = {
         "run_type": "visualization",
         "output_dir": run_dir,
         "input_data_dir": cfg.OUTPUT_DIR,
-        "visual_grid_size": VISUAL_GRID_SIZE,
-        "domain": {
-            "x_min": cfg.X_MIN,
-            "x_max": cfg.X_MAX,
-            "y_min": cfg.Y_MIN,
-            "y_max": cfg.Y_MAX,
-        },
-        "simulation": {
-            "integrator": cfg.INTEGRATOR,
-            "dt": cfg.DT,
-            "time_steps": cfg.TIME_STEPS,
-            "grid_size": cfg.GRID_SIZE,
-            "space_size": cfg.SPACE_SIZE,
-            "G": cfg.G,
-            "softening_factor": getattr(cfg, "SOFTENING_FACTOR", "not_set"),
-            "use_zoom": cfg.USE_ZOOM,
-            "masses": cfg.MASSES,
-            "body1_pos_frac": cfg.BODY1_POS_FRAC,
-            "body2_pos_frac": cfg.BODY2_POS_FRAC,
-            "body1_vel": cfg.BODY1_VEL,
-            "body2_vel": cfg.BODY2_VEL,
-            "probe_vel": cfg.PROBE_VEL,
-        },
+        "visual_grid_size": cfg.VISUAL_GRID_SIZE,
         "git": {
             "commit": commit,
             "is_dirty": bool(status and status != "unknown"),
