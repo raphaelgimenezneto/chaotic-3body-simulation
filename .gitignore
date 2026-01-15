@@ -1,14 +1,6 @@
-# Ignorar arquivos de dados
-data/
-*.parquet
-*.csv
-
-# Ignorar cache do Python
 __pycache__/
 *.pyc
-
-# Ignorar configurações de ambiente
 .env
-.venv/
-env/
-.ipynb_checkpoints/
+
+data/
+outputs/
