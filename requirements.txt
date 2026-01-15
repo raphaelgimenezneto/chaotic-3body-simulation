@@ -1,4 +1,5 @@
-numpy
-pandas
-numba
-pyarrow
+numpy>=1.23
+pandas>=1.5
+matplotlib>=3.7
+numba>=0.57
+pyarrow>=12.0
