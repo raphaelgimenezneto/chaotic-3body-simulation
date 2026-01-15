@@ -43,7 +43,7 @@ PROBE_VEL = (0.0, 0.05) # This was previously hardcoded in physics.py
 # ----------------------------
 # Dataset generation parameters
 # ----------------------------
-NUM_SIMULATIONS = 500000
+NUM_SIMULATIONS = 5000000
 BATCH_SIZE = 50000
 OUTPUT_DIR = os.path.join("data", "raw")
 METRIC_COLUMN_NAME = "total_sum" # Canonical name for the output metric column
