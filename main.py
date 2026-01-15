@@ -1,8 +1,17 @@
 import os
 import numpy as np
 import pandas as pd
+
 import src.config as cfg
 from src.physics import run_simulation_batch
+
+
+# Map config string -> integer ID (Numba-friendly)
+INTEGRATOR_MAP = {
+    "euler": 0,
+    "rk4": 1,
+    "verlet": 2,
+}
 
 
 def main() -> None:
@@ -26,12 +35,16 @@ def main() -> None:
     assert cfg.Y_MAX > cfg.Y_MIN, "Y_MAX must be greater than Y_MIN"
     assert cfg.NUM_SIMULATIONS > 0, "NUM_SIMULATIONS must be greater than 0"
     assert cfg.BATCH_SIZE > 0, "BATCH_SIZE must be greater than 0"
+    assert cfg.INTEGRATOR in INTEGRATOR_MAP, f"Unknown integrator: {cfg.INTEGRATOR!r}"
+
+    integrator_id = INTEGRATOR_MAP[cfg.INTEGRATOR]
 
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
     print("--- STARTING SIMULATION ---")
     print(f"Zoom mode: {cfg.USE_ZOOM}")
     print(f"Area: X[{cfg.X_MIN}-{cfg.X_MAX}], Y[{cfg.Y_MIN}-{cfg.Y_MAX}]")
+    print(f"Integrator: {cfg.INTEGRATOR}")
     print(f"Total simulations: {cfg.NUM_SIMULATIONS} | Batch size: {cfg.BATCH_SIZE}")
 
     # Reproducible RNG when cfg.SEED is provided; otherwise uses system entropy.
@@ -73,17 +86,20 @@ def main() -> None:
             cfg.TIME_STEPS,
             cfg.DT,
             cfg.G,
+            integrator_id,
         )
 
         # ----------------------------
         # 3) Save as Parquet
         # float32 reduces storage size while remaining sufficient for most analyses
         # ----------------------------
-        df_batch = pd.DataFrame({
-            "x": batch_positions[:, 0].astype(np.float32),
-            "y": batch_positions[:, 1].astype(np.float32),
-            "total_sum": np.asarray(results, dtype=np.float32),
-        })
+        df_batch = pd.DataFrame(
+            {
+                "x": batch_positions[:, 0].astype(np.float32),
+                "y": batch_positions[:, 1].astype(np.float32),
+                "total_sum": np.asarray(results, dtype=np.float32),
+            }
+        )
 
         file_path = os.path.join(cfg.OUTPUT_DIR, f"batch_{batch_idx:05d}.parquet")
         try:
@@ -94,7 +110,10 @@ def main() -> None:
             ) from e
 
         total_saved += len(df_batch)
-        print(f"Batch {batch_idx + 1}/{num_batches} saved. ({total_saved}/{cfg.NUM_SIMULATIONS})")
+        print(
+            f"Batch {batch_idx + 1}/{num_batches} saved. "
+            f"({total_saved}/{cfg.NUM_SIMULATIONS})"
+        )
 
     print("--- FINISHED ---")
 

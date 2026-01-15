@@ -23,6 +23,7 @@ VISUAL_GRID_SIZE = 100
 def main() -> None:
     print("--- STARTING VISUALIZATION ---")
     print(f"Reading data from: {cfg.OUTPUT_DIR}")
+    print(f"Configured integrator: {cfg.INTEGRATOR}")
 
     # 1) Load data
     try:
@@ -85,6 +86,15 @@ def main() -> None:
             "x_max": cfg.X_MAX,
             "y_min": cfg.Y_MIN,
             "y_max": cfg.Y_MAX,
+        },
+        "simulation": {
+            "integrator": cfg.INTEGRATOR,
+            "dt": cfg.DT,
+            "time_steps": cfg.TIME_STEPS,
+            "grid_size": cfg.GRID_SIZE,
+            "space_size": cfg.SPACE_SIZE,
+            "G": cfg.G,
+            "use_zoom": cfg.USE_ZOOM,
         },
         "git": {
             "commit": commit,

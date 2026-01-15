@@ -9,6 +9,10 @@ DT = 0.01
 SPACE_SIZE = 1.0
 G = 1.0
 
+# Integration method (used by physics engine)
+# Options: "euler", "rk4", "verlet"
+INTEGRATOR = "euler"
+
 # ----------------------------
 # Dataset generation parameters
 # ----------------------------
@@ -17,7 +21,7 @@ BATCH_SIZE = 50_000
 OUTPUT_DIR = os.path.join("data", "raw")
 
 # Reproducibility (set to None for non-deterministic runs)
-SEED = 42
+SEED = None
 
 # ----------------------------
 # Sampling domain
@@ -38,6 +42,7 @@ else:
 # ----------------------------
 # Sanity checks (fail fast)
 # ----------------------------
+assert INTEGRATOR in {"euler", "rk4", "verlet"}, "INTEGRATOR must be one of: euler, rk4, verlet"
 assert SPACE_SIZE > 0, "SPACE_SIZE must be > 0"
 assert 0 <= X_MIN < X_MAX <= SPACE_SIZE, "Invalid X domain bounds"
 assert 0 <= Y_MIN < Y_MAX <= SPACE_SIZE, "Invalid Y domain bounds"
