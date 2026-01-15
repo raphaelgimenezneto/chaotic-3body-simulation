@@ -16,8 +16,8 @@ INTEGRATOR = "euler"
 # ----------------------------
 # Dataset generation parameters
 # ----------------------------
-NUM_SIMULATIONS = 500_000
-BATCH_SIZE = 50_000
+NUM_SIMULATIONS = 5000000
+BATCH_SIZE = 50000
 OUTPUT_DIR = os.path.join("data", "raw")
 
 # Reproducibility (set to None for non-deterministic runs)

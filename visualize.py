@@ -17,7 +17,7 @@ from src.run_metadata import (
 )
 
 # Visualization-specific resolution (can be lower than simulation grid for faster rendering)
-VISUAL_GRID_SIZE = 100
+VISUAL_GRID_SIZE = 150
 
 
 def main() -> None:
