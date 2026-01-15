@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -5,7 +6,17 @@ import src.config as cfg
 from src.analysis import compute_grid_statistics, classify_regions
 from src.plotting import plot_analysis
 
-# Visualization-specific resolution (can be lower than the simulation grid for faster rendering)
+from src.run_metadata import (
+    make_run_dir,
+    snapshot_config,
+    get_git_commit,
+    get_git_status_porcelain,
+    get_pip_freeze,
+    write_json,
+    write_text,
+)
+
+# Visualization-specific resolution (can be lower than simulation grid for faster rendering)
 VISUAL_GRID_SIZE = 100
 
 
@@ -14,7 +25,6 @@ def main() -> None:
     print(f"Reading data from: {cfg.OUTPUT_DIR}")
 
     # 1) Load data
-    # With pyarrow, pandas can read a folder of parquet files as a single DataFrame.
     try:
         df = pd.read_parquet(cfg.OUTPUT_DIR, engine="pyarrow")
     except FileNotFoundError:
@@ -28,32 +38,65 @@ def main() -> None:
         return
 
     if len(df) == 0:
-        print("Error: no rows found. Make sure main.py generated parquet files in the output folder.")
+        print("Error: no rows found. Make sure main.py generated parquet files.")
         return
 
-    # Optional: validate expected columns (adjust names if your dataset uses different ones)
-    expected_cols = {"x", "y"}
-    if not expected_cols.issubset(df.columns):
-        print(f"Error: expected columns {sorted(expected_cols)} but got {sorted(df.columns)}")
-        return
-
-    print(f"Loaded {len(df)} points.")
-    print("Computing grid statistics...")
-
-    # 2) Domain bounds (from config.py, so the plot matches the simulated domain)
+    # 2) Domain bounds (match simulation domain)
     x_range = [cfg.X_MIN, cfg.X_MAX]
     y_range = [cfg.Y_MIN, cfg.Y_MAX]
     extent = [cfg.X_MIN, cfg.X_MAX, cfg.Y_MIN, cfg.Y_MAX]
 
     # 3) Compute statistics
-    mean, variance, mask = compute_grid_statistics(df, VISUAL_GRID_SIZE, x_range, y_range)
+    mean, var, mask = compute_grid_statistics(df, VISUAL_GRID_SIZE, x_range, y_range)
 
     # 4) Classify regions
-    class_map = classify_regions(mean, variance, mask)
+    class_map = classify_regions(mean, var, mask)
 
     # 5) Plot
     print("Rendering plots...")
-    plot_analysis(mean, variance, class_map, extent)
+    fig = plot_analysis(mean, var, class_map, extent)
+
+    # 6) Save run artifacts (always)
+    run_dir = make_run_dir(base_dir="outputs", prefix="vis")
+
+    fig_path = os.path.join(run_dir, "figure.png")
+    fig.savefig(fig_path, dpi=200)
+    print(f"Saved figure: {fig_path}")
+
+    # Metadata
+    commit = get_git_commit()
+    status = get_git_status_porcelain()
+    pip_freeze = get_pip_freeze()
+    cfg_snapshot = snapshot_config(cfg)
+
+    write_text(os.path.join(run_dir, "git_commit.txt"), commit + "\n")
+    write_text(os.path.join(run_dir, "git_status_porcelain.txt"), status + "\n")
+    write_text(os.path.join(run_dir, "pip_freeze.txt"), pip_freeze + "\n")
+    write_json(os.path.join(run_dir, "config_snapshot.json"), cfg_snapshot)
+
+    # Extra run info (handy for quick auditing)
+    run_info = {
+        "run_type": "visualization",
+        "output_dir": run_dir,
+        "input_data_dir": cfg.OUTPUT_DIR,
+        "visual_grid_size": VISUAL_GRID_SIZE,
+        "domain": {
+            "x_min": cfg.X_MIN,
+            "x_max": cfg.X_MAX,
+            "y_min": cfg.Y_MIN,
+            "y_max": cfg.Y_MAX,
+        },
+        "git": {
+            "commit": commit,
+            "is_dirty": bool(status and status != "unknown"),
+        },
+    }
+    write_json(os.path.join(run_dir, "run_info.json"), run_info)
+
+    if status and status != "unknown":
+        print("WARNING: working tree has uncommitted changes.")
+        print("         Commit hash may not fully describe the code used.")
+
     plt.show()
 
 

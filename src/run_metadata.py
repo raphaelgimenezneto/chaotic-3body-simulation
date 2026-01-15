@@ -1,12 +1,12 @@
 import json
 import os
 import subprocess
-from dataclasses import asdict, dataclass
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
-def _safe_run(cmd):
+def _safe_run(cmd: list[str]) -> str:
+    """Run a command and return stdout, or 'unknown' if it fails."""
     try:
         out = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)
         return out.strip()
@@ -19,12 +19,12 @@ def get_git_commit() -> str:
 
 
 def get_git_status_porcelain() -> str:
-    # Empty string means clean working tree
+    # Empty string means clean working tree.
     return _safe_run(["git", "status", "--porcelain"])
 
 
 def get_pip_freeze() -> str:
-    # Uses current interpreter environment
+    # Uses current Python environment.
     return _safe_run(["python", "-m", "pip", "freeze"])
 
 
@@ -33,21 +33,28 @@ def snapshot_config(cfg_module) -> Dict[str, Any]:
     Convert a config module into a JSON-serializable dict,
     keeping only ALL_CAPS variables.
     """
-    d = {}
+    snap: Dict[str, Any] = {}
     for k, v in vars(cfg_module).items():
-        if k.isupper():
-            # try JSON serialization; fall back to string
-            try:
-                json.dumps(v)
-                d[k] = v
-            except TypeError:
-                d[k] = str(v)
-    return d
+        if not k.isupper():
+            continue
+        try:
+            json.dumps(v)
+            snap[k] = v
+        except TypeError:
+            snap[k] = str(v)
+    return snap
 
 
-def make_run_dir(base_dir: str = "outputs") -> str:
+def make_run_dir(base_dir: str = "outputs", prefix: Optional[str] = None) -> str:
+    """
+    Create a timestamped run directory like:
+      outputs/2026-01-15_06-12-03
+    or with prefix:
+      outputs/vis_2026-01-15_06-12-03
+    """
     ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    run_dir = os.path.join(base_dir, ts)
+    name = f"{prefix}_{ts}" if prefix else ts
+    run_dir = os.path.join(base_dir, name)
     os.makedirs(run_dir, exist_ok=True)
     return run_dir
 
