@@ -86,20 +86,11 @@ def euler_step(pos_x, pos_y, vel_x, vel_y, ejected, dt, space_size, G, fx, fy):
 
 
 @njit(parallel=True, fastmath=True)
-def run_simulation_batch(initial_positions, grid_size, space_size, time_steps, dt, G, integrator_id):
-    """
-    Run the physics simulation for a batch of initial particle positions.
-
-    integrator_id:
-      0 = Euler
-      1 = RK4 (not implemented yet)
-      2 = Verlet (not implemented yet)
-    """
+def run_simulation_batch_euler(initial_positions, grid_size, space_size, time_steps, dt, G):
     N = initial_positions.shape[0]
     results = np.zeros(N, dtype=np.float64)
 
     for i in prange(N):
-        # State vectors for 3 bodies
         pos_x = np.zeros(3)
         pos_y = np.zeros(3)
         vel_x = np.zeros(3)
@@ -108,7 +99,6 @@ def run_simulation_batch(initial_positions, grid_size, space_size, time_steps, d
         fy = np.zeros(3)
         ejected = np.zeros(3, dtype=np.bool_)
 
-        # Initial setup: two predefined starting positions + one variable body
         pos_x[0] = 0.25
         pos_x[1] = 0.75
         pos_x[2] = initial_positions[i, 0]
@@ -117,7 +107,6 @@ def run_simulation_batch(initial_positions, grid_size, space_size, time_steps, d
         pos_y[1] = 0.75
         pos_y[2] = initial_positions[i, 1]
 
-        # Initial velocities (chosen constants for the demo)
         vel_x[0] = 0.05
         vel_x[1] = 0.0
         vel_x[2] = 0.0
@@ -130,23 +119,12 @@ def run_simulation_batch(initial_positions, grid_size, space_size, time_steps, d
         num_ejected = 0
 
         for _ in range(time_steps):
-            # Dispatch integrator (Numba-friendly int switch)
-            if integrator_id == 0:
-                newly_ejected = euler_step(pos_x, pos_y, vel_x, vel_y, ejected, dt, space_size, G, fx, fy)
-            elif integrator_id == 1:
-                # Placeholder: RK4 will be added later
-                raise ValueError("RK4 integrator not implemented yet (integrator_id=1)")
-            elif integrator_id == 2:
-                # Placeholder: Verlet will be added later
-                raise ValueError("Verlet integrator not implemented yet (integrator_id=2)")
-            else:
-                raise ValueError("Unknown integrator_id")
-
+            newly_ejected = euler_step(pos_x, pos_y, vel_x, vel_y, ejected, dt, space_size, G, fx, fy)
             num_ejected += newly_ejected
+
             if num_ejected == 3:
                 break
 
-            # Grid-based accumulation (1-indexed linear cell id)
             for a in range(3):
                 if not ejected[a]:
                     xi, yi = get_cell_index(pos_x[a], pos_y[a], grid_size, space_size)
@@ -155,3 +133,18 @@ def run_simulation_batch(initial_positions, grid_size, space_size, time_steps, d
         results[i] = total_sum
 
     return results
+
+
+def run_simulation_batch(initial_positions, grid_size, space_size, time_steps, dt, G, integrator_id):
+    """
+    Public API: dispatch to the chosen integrator.
+    Keep this function NOT jitted to avoid Numba parallelization issues.
+    """
+    if integrator_id == 0:
+        return run_simulation_batch_euler(initial_positions, grid_size, space_size, time_steps, dt, G)
+    elif integrator_id == 1:
+        raise ValueError("RK4 integrator not implemented yet (integrator_id=1)")
+    elif integrator_id == 2:
+        raise ValueError("Verlet integrator not implemented yet (integrator_id=2)")
+    else:
+        raise ValueError("Unknown integrator_id")
