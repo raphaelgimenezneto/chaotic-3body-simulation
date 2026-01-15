@@ -14,6 +14,22 @@ G = 1.0
 INTEGRATOR = "euler"
 
 # ----------------------------
+# System Initial Conditions
+# ----------------------------
+# Masses for Body 1, Body 2, and the Probe (Body 3)
+MASSES = [1.0, 1.0, 1.0]
+
+# Initial positions for Body 1 and Body 2, as a fraction of SPACE_SIZE.
+# The Probe's initial position is sampled uniformly and defined by X_MIN/X_MAX etc.
+BODY1_POS_FRAC = (0.25, 0.25)
+BODY2_POS_FRAC = (0.75, 0.75)
+
+# Initial velocities for all three bodies. These are absolute values.
+BODY1_VEL = (0.05, 0.0)
+BODY2_VEL = (0.0, -0.05)
+PROBE_VEL = (0.0, 0.05) # This was previously hardcoded in physics.py
+
+# ----------------------------
 # Dataset generation parameters
 # ----------------------------
 NUM_SIMULATIONS = 5000000
@@ -24,11 +40,11 @@ OUTPUT_DIR = os.path.join("data", "raw")
 SEED = None
 
 # ----------------------------
-# Sampling domain
+# Sampling domain for the Probe (Body 3)
 # ----------------------------
 USE_ZOOM = False
 
-# Zoom expressed as fractions of SPACE_SIZE to stay consistent if SPACE_SIZE changes
+# Zoom expressed as fractions of SPACE_SIZE to stay consistent
 ZOOM_X_MIN_FRAC, ZOOM_X_MAX_FRAC = 0.4, 0.6
 ZOOM_Y_MIN_FRAC, ZOOM_Y_MAX_FRAC = 0.4, 0.6
 
@@ -51,3 +67,4 @@ assert 0 < BATCH_SIZE <= NUM_SIMULATIONS, "BATCH_SIZE must be in (0, NUM_SIMULAT
 assert GRID_SIZE > 0, "GRID_SIZE must be > 0"
 assert TIME_STEPS > 0, "TIME_STEPS must be > 0"
 assert DT > 0, "DT must be > 0"
+assert len(MASSES) == 3 and all(m > 0 for m in MASSES), "MASSES must be a list of 3 positive numbers"

@@ -60,6 +60,20 @@ def main() -> None:
     width = cfg.X_MAX - cfg.X_MIN
     height = cfg.Y_MAX - cfg.Y_MIN
 
+    # ----------------------------
+    # Prepare system initial conditions from config
+    # ----------------------------
+    # Convert fractional positions to absolute positions
+    body1_pos = (cfg.BODY1_POS_FRAC[0] * cfg.SPACE_SIZE, cfg.BODY1_POS_FRAC[1] * cfg.SPACE_SIZE)
+    body2_pos = (cfg.BODY2_POS_FRAC[0] * cfg.SPACE_SIZE, cfg.BODY2_POS_FRAC[1] * cfg.SPACE_SIZE)
+
+    # Package system parameters for Numba. Numba works well with arrays/tuples.
+    initial_conditions = {
+        "masses": np.array(cfg.MASSES, dtype=np.float64),
+        "positions": np.array([body1_pos, body2_pos], dtype=np.float64),
+        "velocities": np.array([cfg.BODY1_VEL, cfg.BODY2_VEL, cfg.PROBE_VEL], dtype=np.float64),
+    }
+
     for batch_idx in range(num_batches):
         # If NUM_SIMULATIONS is not a multiple of BATCH_SIZE, the last batch is smaller.
         remaining = cfg.NUM_SIMULATIONS - batch_idx * cfg.BATCH_SIZE
@@ -80,13 +94,14 @@ def main() -> None:
         # Expected output: one scalar per initial position (shape: (batch_size,))
         # ----------------------------
         results = run_simulation_batch(
-            batch_positions,
-            cfg.GRID_SIZE,
-            cfg.SPACE_SIZE,
-            cfg.TIME_STEPS,
-            cfg.DT,
-            cfg.G,
-            integrator_id,
+            probe_initial_positions=batch_positions,
+            grid_size=cfg.GRID_SIZE,
+            space_size=cfg.SPACE_SIZE,
+            time_steps=cfg.TIME_STEPS,
+            dt=cfg.DT,
+            G=cfg.G,
+            integrator_id=integrator_id,
+            initial_conditions=initial_conditions,
         )
 
         # ----------------------------
