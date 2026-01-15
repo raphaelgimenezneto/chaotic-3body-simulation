@@ -1,5 +1,5 @@
 # Chaotic 3-Body Simulation (Batch + Spatial Analysis)
-[IMAGE: assets/example_output.png]
+![Example output](assets/example_spatial_phase_map.png)
 
 This project implements a batch-based numerical simulation of a simplified
 3-body gravitational system, with emphasis on chaotic dynamics, spatial
