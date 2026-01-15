@@ -36,6 +36,7 @@ PROBE_VEL = (0.0, 0.05) # This was previously hardcoded in physics.py
 NUM_SIMULATIONS = 5000000
 BATCH_SIZE = 50000
 OUTPUT_DIR = os.path.join("data", "raw")
+METRIC_COLUMN_NAME = "total_sum" # Canonical name for the output metric column
 
 # Reproducibility (set to None for non-deterministic runs)
 SEED = None
@@ -77,3 +78,4 @@ assert TIME_STEPS > 0, "TIME_STEPS must be > 0"
 assert DT > 0, "DT must be > 0"
 assert SOFTENING_FACTOR >= 0, "SOFTENING_FACTOR must be a non-negative number"
 assert len(MASSES) == 3 and all(m > 0 for m in MASSES), "MASSES must be a list of 3 positive numbers"
+assert METRIC_COLUMN_NAME, "METRIC_COLUMN_NAME must be a non-empty string"

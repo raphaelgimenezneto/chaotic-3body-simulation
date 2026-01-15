@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import src.config as cfg
 
 
 def compute_grid_statistics(df: pd.DataFrame, grid_size: int, x_range, y_range):
@@ -12,7 +13,7 @@ def compute_grid_statistics(df: pd.DataFrame, grid_size: int, x_range, y_range):
         Must contain columns:
           - 'x' (float): x positions
           - 'y' (float): y positions
-          - 'total_sum' or 'soma_total' (float): per-sample scalar value to aggregate
+          - The metric column (name defined in src.config.METRIC_COLUMN_NAME)
 
     grid_size : int
         Number of bins per axis (grid_size x grid_size).
@@ -27,13 +28,13 @@ def compute_grid_statistics(df: pd.DataFrame, grid_size: int, x_range, y_range):
     mask      : np.ndarray (grid_size, grid_size) of bool
         True where at least one sample fell into the cell.
     """
-    # Pick the value column (support both names to avoid breaking old datasets)
-    if "total_sum" in df.columns:
-        value_col = "total_sum"
-    elif "soma_total" in df.columns:
-        value_col = "soma_total"
-    else:
-        raise KeyError("Expected a value column: 'total_sum' or 'soma_total'")
+    # Use the canonical column name from the central configuration.
+    value_col = cfg.METRIC_COLUMN_NAME
+    if value_col not in df.columns:
+        raise KeyError(
+            f"Expected metric column '{value_col}' not found in the DataFrame. "
+            "Ensure the dataset was generated with a consistent configuration."
+        )
 
     # np.histogram2d expects range=[[ymin, ymax], [xmin, xmax]] for (y, x) ordering below
     hist_range = [y_range, x_range]

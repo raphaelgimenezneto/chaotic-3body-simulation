@@ -24,8 +24,8 @@ def main() -> None:
       3) Save each batch as a Parquet file for efficient downstream analysis
 
     Output files:
-      - One Parquet file per batch: OUTPUT_DIR/batch_00000.parquet, batch_00001.parquet, ...
-      - Columns: x (float32), y (float32), total_sum (float32)
+      - One Parquet file per batch: OUTPUT_DIR/batch_00000.parquet, ...
+      - Columns: x (float32), y (float32), and the metric column (e.g., 'total_sum').
     """
 
     # ----------------------------
@@ -113,7 +113,7 @@ def main() -> None:
             {
                 "x": batch_positions[:, 0].astype(np.float32),
                 "y": batch_positions[:, 1].astype(np.float32),
-                "total_sum": np.asarray(results, dtype=np.float32),
+                cfg.METRIC_COLUMN_NAME: np.asarray(results, dtype=np.float32),
             }
         )
 

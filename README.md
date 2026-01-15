@@ -54,8 +54,8 @@ PROJECT STRUCTURE
 
 PHYSICS MODEL (HIGH-LEVEL)
 
-- Three bodies with unit mass
-- Pairwise inverse-square force (scaled by G)
+- Three bodies with configurable masses (defaults to unit mass)
+- Pairwise inverse-square force (scaled by G) with a softening factor to avoid singularities
 - Fixed time-step integration
 - Two bodies start at fixed positions and velocities
 - The third body is sampled uniformly over a 2D domain
@@ -85,12 +85,13 @@ All parameters that affect the simulation live in src/config.py and follow an
 ALL_CAPS convention.
 
 Examples:
-- GRID_SIZE
-- TIME_STEPS
-- DT
-- NUM_SIMULATIONS
-- INTEGRATOR
-- USE_ZOOM
+- GRID_SIZE            (Simulation domain grid resolution)
+- VISUAL_GRID_SIZE     (Analysis and plotting grid resolution)
+- TIME_STEPS           (Duration of each simulation)
+- DT                   (Integration time step)
+- INTEGRATOR           (e.g., "euler")
+- SOFTENING_FACTOR     (Physics parameter to avoid singularities)
+- MASSES               (Mass of each of the three bodies)
 
 All configuration values are automatically snapshotted during visualization.
 
@@ -115,7 +116,7 @@ data/raw/
 
 Each file contains:
 - x, y: initial position
-- total_sum: accumulated dynamical metric
+- A metric column (e.g., "total_sum"): accumulated dynamical metric. The column name is configurable in src/config.py via METRIC_COLUMN_NAME.
 
 --------------------------------------------------------------------------
 
@@ -131,8 +132,8 @@ outputs/vis_YYYY-MM-DD_HH-MM-SS/
 
 Containing:
 - figure.png
-- config_snapshot.json
-- run_info.json
+- config_snapshot.json   (A complete snapshot of all parameters from src/config.py)
+- run_info.json          (Metadata about the visualization run itself, e.g., git commit, data paths)
 - git_commit.txt
 - git_status_porcelain.txt
 - pip_freeze.txt
