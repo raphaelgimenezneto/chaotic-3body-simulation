@@ -22,7 +22,7 @@ SOFTENING_FACTOR = 1e-6  # Avoids singularity when distance is zero
 # "rk4":    (Runge-Kutta 4th-order) Very accurate per time step, but
 #           requires 4 force calculations per step, making it slower.
 #
-INTEGRATOR = "rk4" 
+INTEGRATOR = "verlet" 
 
 # ----------------------------
 # System Initial Conditions

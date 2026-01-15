@@ -69,13 +69,23 @@ to initial conditions.
 
 NUMERICAL INTEGRATION
 
-The integration method is configurable via src/config.py:
+The integration method is configurable via src/config.py, with three fully
+implemented options:
 
-INTEGRATOR = "euler"    options: euler | rk4 | verlet
+INTEGRATOR = "rk4"    # options: euler | rk4 | verlet
 
-- Euler integration is currently implemented
-- RK4 and Velocity Verlet are structurally supported and planned
-- Integration is performed using Numba for parallel execution
+The core physics engine is designed for maximum performance using Numba. It employs
+several high-performance computing (HPC) techniques:
+
+- JIT-Compiled Engine: The entire simulation loop is JIT-compiled to native
+  machine code by Numba for C-like speed.
+- Zero-Allocation Loops: Integrators are implemented to be "zero-allocation,"
+  meaning they do not create temporary memory buffers during the time-stepping
+  loop, eliminating garbage collection overhead.
+- Loop Unswitching: The main loop is structured to avoid conditional branches
+  on the hot path, allowing for more aggressive compiler optimizations.
+- Optimized Force Calculation: Gravitational interactions are calculated
+  efficiently using Newton's 3rd Law to halve the number of computations.
 
 --------------------------------------------------------------------------
 
@@ -160,10 +170,11 @@ These regions can be interpreted as distinct dynamical regimes.
 DESIGN PHILOSOPHY
 
 - Deterministic, batch-oriented simulations
-- Explicit parameterization
-- No hidden global state
+- Explicit parameterization and no hidden global state
 - Reproducibility over convenience
-- Performance-aware (Numba, Parquet, vectorized workflows)
+- Aggressive Performance Optimization: The core physics engine is designed to
+  maximize computational throughput on multi-core CPUs, employing low-level
+  optimization techniques within a high-level Python workflow.
 
 --------------------------------------------------------------------------
 
